@@ -39,3 +39,7 @@ jspm_packages
 src/.env
 src/deploy.env
 src/config.js
+
+build/
+
+.DS_Store
