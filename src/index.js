@@ -16,6 +16,17 @@ exports.handler = function(event, context, callback) {
   var promises = [];
   var filenames = [];
 
+
+  //Empty /tmp
+  var c = spawn('rm', [ '-rf', '/tmp/*']);
+  c.stderr.on('data', function (data) {
+    console.log('stderr: ' + data);
+  });
+  c.on('close', function (code) {
+    console.log(code);
+  });
+
+
   //Download each of the files
   event.input.forEach(function(inputUrl) {
     var fileName = path.basename(url.parse(inputUrl).pathname);
@@ -24,7 +35,17 @@ exports.handler = function(event, context, callback) {
     promises.push(new Promise(function(resolve, reject) {
       var file = fs.createWriteStream('/tmp/' + fileName);
 
-      var stream = request.get(inputUrl).pipe(file);
+      var stream = request
+        .get(inputUrl)
+        .on('error', function(err) {
+          console.log('errror');
+          callback(err);
+          return;
+        })
+        .pipe(file)
+  ;
+
+
       stream.on('finish', function() {
         resolve();
       });
